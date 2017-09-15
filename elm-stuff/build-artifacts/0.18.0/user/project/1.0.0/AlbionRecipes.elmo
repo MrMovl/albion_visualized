@@ -1,0 +1,432 @@
+var _user$project$AlbionRecipes$printError = function (error) {
+	var _p0 = error;
+	switch (_p0.ctor) {
+		case 'BadUrl':
+			return _elm_lang$html$Html$text(
+				A2(_elm_lang$core$Basics_ops['++'], 'Bad URL:', _p0._0));
+		case 'Timeout':
+			return _elm_lang$html$Html$text('Timeout');
+		case 'NetworkError':
+			return _elm_lang$html$Html$text('Network Error');
+		case 'BadStatus':
+			return _elm_lang$html$Html$text('Bad Status');
+		default:
+			return _elm_lang$html$Html$text(
+				A2(_elm_lang$core$Basics_ops['++'], 'Bad Payload: ', _p0._0));
+	}
+};
+var _user$project$AlbionRecipes$buildItem = F7(
+	function (id, name, category_id, category_name, sub_category_id, sub_category_name, tier) {
+		return {id: id, name: name, category_id: category_id, category_name: category_name, sub_category_id: sub_category_id, sub_category_name: sub_category_name, tier: tier};
+	});
+var _user$project$AlbionRecipes$buildBuySell = F5(
+	function (total_volume, price_average, price_minimum, price_maximum, order_count) {
+		return {total_volume: total_volume, price_average: price_average, price_minimum: price_minimum, price_maximum: price_maximum, order_count: order_count};
+	});
+var _user$project$AlbionRecipes$buildStats = F2(
+	function (buy, sell) {
+		return {buy: buy, sell: sell};
+	});
+var _user$project$AlbionRecipes$buildMarketItem = F2(
+	function (stats, item) {
+		return {stats: stats, item: item};
+	});
+var _user$project$AlbionRecipes$buySellDecoder = A3(
+	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+	'order_count',
+	_elm_lang$core$Json_Decode$int,
+	A3(
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+		'price_maximum',
+		_elm_lang$core$Json_Decode$int,
+		A3(
+			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+			'price_minimum',
+			_elm_lang$core$Json_Decode$int,
+			A3(
+				_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+				'price_average',
+				_elm_lang$core$Json_Decode$float,
+				A3(
+					_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+					'total_volume',
+					_elm_lang$core$Json_Decode$int,
+					_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$AlbionRecipes$buildBuySell))))));
+var _user$project$AlbionRecipes$statsDecoder = A3(
+	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+	'sell',
+	_user$project$AlbionRecipes$buySellDecoder,
+	A3(
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+		'buy',
+		_user$project$AlbionRecipes$buySellDecoder,
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$AlbionRecipes$buildStats)));
+var _user$project$AlbionRecipes$buildResources = function (marketDataItems) {
+	return {resources: marketDataItems};
+};
+var _user$project$AlbionRecipes$update = F2(
+	function (msg, model) {
+		var _p1 = msg;
+		if (_p1.ctor === 'LoadItems') {
+			if (_p1._0.ctor === 'Ok') {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							items: _elm_lang$core$Maybe$Just(_p1._0._0.resources)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			} else {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							loadingError: _elm_lang$core$Maybe$Just(_p1._0._0)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			}
+		} else {
+			return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+		}
+	});
+var _user$project$AlbionRecipes$initialModel = {items: _elm_lang$core$Maybe$Nothing, loadingError: _elm_lang$core$Maybe$Nothing};
+var _user$project$AlbionRecipes$printItem = function (item) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$h2,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(item.name),
+					_1: {ctor: '[]'}
+				}),
+			_1: {ctor: '[]'}
+		});
+};
+var _user$project$AlbionRecipes$printBuySellStats = function (stats) {
+	return A2(
+		_elm_lang$html$Html$ul,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$li,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(
+						A2(
+							F2(
+								function (x, y) {
+									return A2(_elm_lang$core$Basics_ops['++'], x, y);
+								}),
+							'Total Volume: ',
+							_elm_lang$core$Basics$toString(stats.total_volume))),
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$li,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(
+							A2(
+								F2(
+									function (x, y) {
+										return A2(_elm_lang$core$Basics_ops['++'], x, y);
+									}),
+								'Price Average: ',
+								_elm_lang$core$Basics$toString(stats.price_average))),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$li,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(
+								A2(
+									F2(
+										function (x, y) {
+											return A2(_elm_lang$core$Basics_ops['++'], x, y);
+										}),
+									'Price Minimum: ',
+									_elm_lang$core$Basics$toString(stats.price_minimum))),
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$li,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text(
+									A2(
+										F2(
+											function (x, y) {
+												return A2(_elm_lang$core$Basics_ops['++'], x, y);
+											}),
+										'Price Maximum: ',
+										_elm_lang$core$Basics$toString(stats.price_maximum))),
+								_1: {ctor: '[]'}
+							}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$li,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text(
+										A2(
+											F2(
+												function (x, y) {
+													return A2(_elm_lang$core$Basics_ops['++'], x, y);
+												}),
+											'Order Count: ',
+											_elm_lang$core$Basics$toString(stats.order_count))),
+									_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						}
+					}
+				}
+			}
+		});
+};
+var _user$project$AlbionRecipes$printStats = function (stats) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$h4,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Buy'),
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: _user$project$AlbionRecipes$printBuySellStats(stats.buy),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$h4,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text('Sell'),
+								_1: {ctor: '[]'}
+							}),
+						_1: {
+							ctor: '::',
+							_0: _user$project$AlbionRecipes$printBuySellStats(stats.sell),
+							_1: {ctor: '[]'}
+						}
+					}),
+				_1: {ctor: '[]'}
+			}
+		});
+};
+var _user$project$AlbionRecipes$printMarketDataItem = function (item) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _user$project$AlbionRecipes$printItem(item.item),
+			_1: {
+				ctor: '::',
+				_0: _user$project$AlbionRecipes$printStats(item.stats),
+				_1: {ctor: '[]'}
+			}
+		});
+};
+var _user$project$AlbionRecipes$printItemList = function (items) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		A2(_elm_lang$core$List$map, _user$project$AlbionRecipes$printMarketDataItem, items));
+};
+var _user$project$AlbionRecipes$view = function (model) {
+	var itemList = function () {
+		var _p2 = model.items;
+		if (_p2.ctor === 'Nothing') {
+			return _elm_lang$html$Html$text('Loading...');
+		} else {
+			return _user$project$AlbionRecipes$printItemList(_p2._0);
+		}
+	}();
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('content'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$h1,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('Albion Market'),
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: itemList,
+				_1: {ctor: '[]'}
+			}
+		});
+};
+var _user$project$AlbionRecipes$viewOrError = function (model) {
+	var _p3 = model.loadingError;
+	if (_p3.ctor === 'Nothing') {
+		return _user$project$AlbionRecipes$view(model);
+	} else {
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('error-message'),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$h1,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text('Albion Recipes'),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$p,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _user$project$AlbionRecipes$printError(_p3._0),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}
+			});
+	}
+};
+var _user$project$AlbionRecipes$Model = F2(
+	function (a, b) {
+		return {items: a, loadingError: b};
+	});
+var _user$project$AlbionRecipes$Resources = function (a) {
+	return {resources: a};
+};
+var _user$project$AlbionRecipes$MarketDataItem = F2(
+	function (a, b) {
+		return {stats: a, item: b};
+	});
+var _user$project$AlbionRecipes$Stats = F2(
+	function (a, b) {
+		return {buy: a, sell: b};
+	});
+var _user$project$AlbionRecipes$BuySell = F5(
+	function (a, b, c, d, e) {
+		return {total_volume: a, price_average: b, price_minimum: c, price_maximum: d, order_count: e};
+	});
+var _user$project$AlbionRecipes$Item = F7(
+	function (a, b, c, d, e, f, g) {
+		return {id: a, name: b, category_id: c, category_name: d, sub_category_id: e, sub_category_name: f, tier: g};
+	});
+var _user$project$AlbionRecipes$itemDecoder = A3(
+	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+	'tier',
+	_elm_lang$core$Json_Decode$int,
+	A3(
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+		'sub_category_name',
+		_elm_lang$core$Json_Decode$string,
+		A3(
+			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+			'sub_category_id',
+			_elm_lang$core$Json_Decode$string,
+			A3(
+				_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+				'category_name',
+				_elm_lang$core$Json_Decode$string,
+				A3(
+					_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+					'category_id',
+					_elm_lang$core$Json_Decode$string,
+					A3(
+						_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+						'name',
+						_elm_lang$core$Json_Decode$string,
+						A3(
+							_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+							'id',
+							_elm_lang$core$Json_Decode$string,
+							_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$AlbionRecipes$Item))))))));
+var _user$project$AlbionRecipes$marketItemDecoder = A3(
+	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+	'item',
+	_user$project$AlbionRecipes$itemDecoder,
+	A3(
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+		'stats',
+		_user$project$AlbionRecipes$statsDecoder,
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$AlbionRecipes$buildMarketItem)));
+var _user$project$AlbionRecipes$resourcesDecoder = A3(
+	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+	'resources',
+	_elm_lang$core$Json_Decode$list(_user$project$AlbionRecipes$marketItemDecoder),
+	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$AlbionRecipes$buildResources));
+var _user$project$AlbionRecipes$Noop = {ctor: 'Noop'};
+var _user$project$AlbionRecipes$LoadItems = function (a) {
+	return {ctor: 'LoadItems', _0: a};
+};
+var _user$project$AlbionRecipes$initialCmd = A2(
+	_elm_lang$http$Http$send,
+	_user$project$AlbionRecipes$LoadItems,
+	A2(_elm_lang$http$Http$get, 'https://albion-market.com/api/v1/orders/resources/', _user$project$AlbionRecipes$resourcesDecoder));
+var _user$project$AlbionRecipes$main = _elm_lang$html$Html$program(
+	{
+		init: {ctor: '_Tuple2', _0: _user$project$AlbionRecipes$initialModel, _1: _user$project$AlbionRecipes$initialCmd},
+		view: _user$project$AlbionRecipes$viewOrError,
+		update: _user$project$AlbionRecipes$update,
+		subscriptions: function (_p4) {
+			return _elm_lang$core$Platform_Sub$none;
+		}
+	})();
