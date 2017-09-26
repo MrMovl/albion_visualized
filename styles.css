@@ -1,0 +1,65 @@
+body { font-family: Verdana; background-color: rgb(44, 44, 44); color: rgb(250, 250, 250); }
+img, canvas { border: 1px solid white; margin: 5px; }
+.large { width: 500px; float: right; }
+.selected { margin: 0; border: 6px solid #60b5cc; }
+.content { margin: 40px auto; width: 960px; }
+#thumbnails { width: 440px; float: left; clear: both; }
+#thumbnails.small img { width: 50px; }
+#thumbnails.med img { width: 100px; }
+#thumbnails.large img { width: 200px; }
+#choose-size { float: left; margin-left: 20px; }
+#choose-size > span { display: inline-block; margin: 0 10px; }
+#activate-groove { float: right; margin-right: 20px; margin-top: 15px; }
+
+h1 { color: #60b5cc; margin-bottom: 0; }
+h3 { float: left; margin: 0 }
+label { vertical-align: bottom; }
+button {
+  float: right; background-color: #60b5cc; border: 0; color: rgb(44, 44, 44);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 10px 30px;
+}
+
+button:hover {
+  background-color: white;
+}
+#thumbnails, img.large, #choose-size, h3 { margin-top: 20px; }
+
+.filters {
+  width: 318px;
+  float: right;
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-slider {
+  width: 300px;
+  display: flex;
+}
+
+.filter-slider label {
+  width: 50px;
+  display: inline-block;
+  padding-top: 5px;
+}
+
+.filters paper-slider {
+  flex-grow: 1;
+}
+
+.filters input {
+  flex-grow: 1;
+  margin: 5px 20px;
+}
+
+.status {
+  position: absolute;
+  top: 40px;
+  right: 100px;
+}
+
+.column {
+  float: left;
+  width: 50%;
+}

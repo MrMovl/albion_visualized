@@ -40,6 +40,50 @@ type alias Item =
     }
 
 
+type alias SimpleItems =
+    { items : List SimpleItem }
+
+
+type alias SimpleItem =
+    { id : String
+    , name : String
+    , category_id : String
+    , sub_category_id : String
+    , tier : Int
+    }
+
+
+itemListDecoder : Decoder SimpleItems
+itemListDecoder =
+    decode buildSimpleItems
+        |> required "items" (list simpleItemDecoder)
+
+
+buildSimpleItems : List SimpleItem -> SimpleItems
+buildSimpleItems simpleItems =
+    { items = simpleItems }
+
+
+simpleItemDecoder : Decoder SimpleItem
+simpleItemDecoder =
+    decode buildSimpleItem
+        |> required "id" string
+        |> required "name" string
+        |> required "category_id" string
+        |> required "sub_category_id" string
+        |> required "tier" int
+
+
+buildSimpleItem : String -> String -> String -> String -> Int -> SimpleItem
+buildSimpleItem id name category_id sub_category_id tier =
+    { id = id
+    , name = name
+    , category_id = category_id
+    , sub_category_id = sub_category_id
+    , tier = tier
+    }
+
+
 resourcesDecoder : Decoder Resources
 resourcesDecoder =
     decode buildResources

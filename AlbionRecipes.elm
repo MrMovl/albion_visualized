@@ -3,18 +3,47 @@ module AlbionRecipes exposing (..)
 import Http
 import Html exposing (..)
 import Html.Attributes exposing (class)
-import AlbionMarketParser exposing (..)
+import AlbionMarketParser
+    exposing
+        ( Resources
+        , MarketDataItem
+        , resourcesDecoder
+        , itemListDecoder
+        , BuySell
+        , Stats
+        , Item
+        , SimpleItems
+        , SimpleItem
+        )
+
+
+itemListUrl : String
+itemListUrl =
+    "https://albion-market.com/api/v1/items/"
+
+
+albionMarketPrefix : String
+albionMarketPrefix =
+    "https://albion-market.com/api/v1/"
 
 
 initialCmd : Cmd Msg
 initialCmd =
-    resourcesDecoder
-        |> Http.get "https://albion-market.com/api/v1/orders/resources/"
+    itemListDecoder
+        |> Http.get itemListUrl
         |> Http.send LoadItems
 
 
+getItemCmd : String -> Cmd Msg
+getItemCmd item =
+    resourcesDecoder
+        |> Http.get ("https://albion-market.com/api/v1/orders/" ++ item ++ "/")
+        |> Http.send LoadItem
+
+
 type alias Model =
-    { items : Maybe (List MarketDataItem)
+    { items : Maybe (List SimpleItem)
+    , itemData : Maybe (List MarketDataItem)
     , loadingError : Maybe Http.Error
     }
 
@@ -22,12 +51,14 @@ type alias Model =
 initialModel : Model
 initialModel =
     { items = Nothing
+    , itemData = Nothing
     , loadingError = Nothing
     }
 
 
 type Msg
-    = LoadItems (Result Http.Error Resources)
+    = LoadItems (Result Http.Error SimpleItems)
+    | LoadItem (Result Http.Error Resources)
     | Noop
 
 
@@ -35,9 +66,15 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         LoadItems (Ok items) ->
-            ( { model | items = Just items.resources }, Cmd.none )
+            ( { model | items = Just items.items }, Cmd.none )
 
         LoadItems (Err error) ->
+            ( { model | loadingError = Just error }, Cmd.none )
+
+        LoadItem (Ok itemData) ->
+            ( { model | itemData = Just itemData.resources }, Cmd.none )
+
+        LoadItem (Err error) ->
             ( { model | loadingError = Just error }, Cmd.none )
 
         Noop ->
@@ -95,12 +132,19 @@ view model =
                     text "Loading..."
 
                 Just items ->
-                    printItemList items
+                    allItems items
     in
         div [ class "content" ]
             [ h1 [] [ text "Albion Market" ]
-            , itemList
+            , div []
+                [ itemList
+                ]
             ]
+
+
+allItems : List SimpleItem -> Html Msg
+allItems items =
+    div [ class "column" ] []
 
 
 printItemList : List MarketDataItem -> Html Msg
@@ -108,7 +152,7 @@ printItemList items =
     List.map
         printMarketDataItem
         items
-        |> div []
+        |> div [ class "column" ]
 
 
 printMarketDataItem : MarketDataItem -> Html Msg
