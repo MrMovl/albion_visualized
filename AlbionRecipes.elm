@@ -2,6 +2,7 @@ module AlbionRecipes exposing (..)
 
 import Http
 import Html exposing (..)
+import Html.Events exposing (onClick, on)
 import Html.Attributes exposing (class)
 import AlbionMarketParser
     exposing
@@ -34,6 +35,13 @@ initialCmd =
         |> Http.send LoadItems
 
 
+fetchItemCmd : String -> Cmd Msg
+fetchItemCmd id =
+    singleItemDecoder
+        |> Http.get (albionMarketPrefix ++ "order/" ++ id)
+        |> Http.send LoadItem
+
+
 getItemCmd : String -> Cmd Msg
 getItemCmd item =
     resourcesDecoder
@@ -59,6 +67,7 @@ initialModel =
 type Msg
     = LoadItems (Result Http.Error SimpleItems)
     | LoadItem (Result Http.Error Resources)
+    | FetchItemData String
     | Noop
 
 
@@ -76,6 +85,9 @@ update msg model =
 
         LoadItem (Err error) ->
             ( { model | loadingError = Just error }, Cmd.none )
+
+        FetchItemData id ->
+            ( model, fetchItemCmd id )
 
         Noop ->
             ( model, Cmd.none )
@@ -144,7 +156,20 @@ view model =
 
 allItems : List SimpleItem -> Html Msg
 allItems items =
-    div [ class "column" ] []
+    List.map
+        printSimpleItem
+        items
+        |> div [ class "column" ]
+
+
+printSimpleItem : SimpleItem -> Html Msg
+printSimpleItem item =
+    let
+        tierString =
+            toString item.tier
+    in
+        div [ onClick (FetchItemData item.id) ]
+            [ text ("Name: " ++ item.name ++ "-- T" ++ tierString) ]
 
 
 printItemList : List MarketDataItem -> Html Msg
