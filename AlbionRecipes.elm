@@ -6,13 +6,7 @@ import Html.Events exposing (onClick, on)
 import Html.Attributes exposing (class)
 import AlbionMarketParser
     exposing
-        ( Resources
-        , MarketDataItem
-        , resourcesDecoder
-        , itemListDecoder
-        , BuySell
-        , Stats
-        , Item
+        ( itemListDecoder
         , SimpleItems
         , SimpleItem
         )
@@ -35,23 +29,8 @@ initialCmd =
         |> Http.send LoadItems
 
 
-fetchItemCmd : String -> Cmd Msg
-fetchItemCmd id =
-    singleItemDecoder
-        |> Http.get (albionMarketPrefix ++ "order/" ++ id)
-        |> Http.send LoadItem
-
-
-getItemCmd : String -> Cmd Msg
-getItemCmd item =
-    resourcesDecoder
-        |> Http.get ("https://albion-market.com/api/v1/orders/" ++ item ++ "/")
-        |> Http.send LoadItem
-
-
 type alias Model =
     { items : Maybe (List SimpleItem)
-    , itemData : Maybe (List MarketDataItem)
     , loadingError : Maybe Http.Error
     }
 
@@ -59,14 +38,12 @@ type alias Model =
 initialModel : Model
 initialModel =
     { items = Nothing
-    , itemData = Nothing
     , loadingError = Nothing
     }
 
 
 type Msg
     = LoadItems (Result Http.Error SimpleItems)
-    | LoadItem (Result Http.Error Resources)
     | FetchItemData String
     | Noop
 
@@ -80,14 +57,8 @@ update msg model =
         LoadItems (Err error) ->
             ( { model | loadingError = Just error }, Cmd.none )
 
-        LoadItem (Ok itemData) ->
-            ( { model | itemData = Just itemData.resources }, Cmd.none )
-
-        LoadItem (Err error) ->
-            ( { model | loadingError = Just error }, Cmd.none )
-
         FetchItemData id ->
-            ( model, fetchItemCmd id )
+            ( model, Cmd.none )
 
         Noop ->
             ( model, Cmd.none )
@@ -169,44 +140,4 @@ printSimpleItem item =
             toString item.tier
     in
         div [ onClick (FetchItemData item.id) ]
-            [ text ("Name: " ++ item.name ++ "-- T" ++ tierString) ]
-
-
-printItemList : List MarketDataItem -> Html Msg
-printItemList items =
-    List.map
-        printMarketDataItem
-        items
-        |> div [ class "column" ]
-
-
-printMarketDataItem : MarketDataItem -> Html Msg
-printMarketDataItem item =
-    div []
-        [ printItem item.item
-        , printStats item.stats
-        ]
-
-
-printStats : Stats -> Html Msg
-printStats stats =
-    div []
-        [ div [] [ h4 [] [ text "Buy" ], printBuySellStats stats.buy ]
-        , div [] [ h4 [] [ text "Sell" ], printBuySellStats stats.sell ]
-        ]
-
-
-printBuySellStats : BuySell -> Html Msg
-printBuySellStats stats =
-    ul []
-        [ li [] [ toString stats.total_volume |> (++) "Total Volume: " |> text ]
-        , li [] [ toString stats.price_average |> (++) "Price Average: " |> text ]
-        , li [] [ toString stats.price_minimum |> (++) "Price Minimum: " |> text ]
-        , li [] [ toString stats.price_maximum |> (++) "Price Maximum: " |> text ]
-        , li [] [ toString stats.order_count |> (++) "Order Count: " |> text ]
-        ]
-
-
-printItem : Item -> Html Msg
-printItem item =
-    div [] [ h2 [] [ text item.name ] ]
+            [ text (item.name ++ " -- T" ++ tierString) ]
