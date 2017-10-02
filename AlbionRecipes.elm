@@ -2,142 +2,139 @@ module AlbionRecipes exposing (..)
 
 import Http
 import Html exposing (..)
-import Html.Events exposing (onClick, on)
 import Html.Attributes exposing (class)
-import AlbionMarketParser
-    exposing
-        ( itemListDecoder
-        , SimpleItems
-        , SimpleItem
-        )
-
-
-itemListUrl : String
-itemListUrl =
-    "https://albion-market.com/api/v1/items/"
-
-
-albionMarketPrefix : String
-albionMarketPrefix =
-    "https://albion-market.com/api/v1/"
-
-
-initialCmd : Cmd Msg
-initialCmd =
-    itemListDecoder
-        |> Http.get itemListUrl
-        |> Http.send LoadItems
+import Html.Events exposing (onClick, on)
+import Recipes exposing (..)
 
 
 type alias Model =
-    { items : Maybe (List SimpleItem)
+    { selectedRecipe : Maybe Product
     , loadingError : Maybe Http.Error
     }
 
 
 initialModel : Model
 initialModel =
-    { items = Nothing
+    { selectedRecipe = Nothing
     , loadingError = Nothing
     }
 
 
 type Msg
-    = LoadItems (Result Http.Error SimpleItems)
-    | FetchItemData String
-    | Noop
+    = NoRecipe
+    | SelectRecipe Product
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        LoadItems (Ok items) ->
-            ( { model | items = Just items.items }, Cmd.none )
+        SelectRecipe product ->
+            ( { model | selectedRecipe = Just product }, Cmd.none )
 
-        LoadItems (Err error) ->
-            ( { model | loadingError = Just error }, Cmd.none )
-
-        FetchItemData id ->
-            ( model, Cmd.none )
-
-        Noop ->
-            ( model, Cmd.none )
+        NoRecipe ->
+            ( { model | selectedRecipe = Nothing }, Cmd.none )
 
 
 main : Program Never Model Msg
 main =
     Html.program
-        { init = ( initialModel, initialCmd )
-        , view = viewOrError
+        { init = ( initialModel, Cmd.none )
+        , view = view
         , update = update
         , subscriptions = (\_ -> Sub.none)
         }
 
 
-viewOrError : Model -> Html Msg
-viewOrError model =
-    case model.loadingError of
-        Nothing ->
-            view model
-
-        Just error ->
-            div [ class "error-message" ]
-                [ h1 [] [ text "Albion Recipes" ]
-                , p [] [ printError error ]
-                ]
-
-
-printError : Http.Error -> Html Msg
-printError error =
-    case error of
-        Http.BadUrl string ->
-            text ("Bad URL:" ++ string)
-
-        Http.Timeout ->
-            text "Timeout"
-
-        Http.NetworkError ->
-            text "Network Error"
-
-        Http.BadStatus _ ->
-            text "Bad Status"
-
-        Http.BadPayload message _ ->
-            "Bad Payload: " ++ message |> text
-
-
 view : Model -> Html Msg
 view model =
     let
-        itemList =
-            case model.items of
+        selectedRecipe =
+            case model.selectedRecipe of
                 Nothing ->
-                    text "Loading..."
+                    text ""
 
-                Just items ->
-                    allItems items
+                Just product ->
+                    product |> toRecipe |> printRecipe
     in
         div [ class "content" ]
-            [ h1 [] [ text "Albion Market" ]
+            [ h1 [] [ text "Albion Recipes" ]
             , div []
-                [ itemList
+                [ printAllProducts
+                , selectedRecipe
                 ]
             ]
 
 
-allItems : List SimpleItem -> Html Msg
-allItems items =
-    List.map
-        printSimpleItem
-        items
-        |> div [ class "column" ]
+toRecipe : Product -> Recipe
+toRecipe product =
+    case product of
+        BeanSalad ->
+            beanSaladRecipe
 
 
-printSimpleItem : SimpleItem -> Html Msg
-printSimpleItem item =
+printRecipe : Recipe -> Html Msg
+printRecipe recipe =
+    div [ class "column" ]
+        [ div []
+            [ printProduct recipe.product
+            , printIngredient recipe.ingredient1
+            , printIngredient recipe.ingredient2
+            , printIngredient recipe.ingredient3
+            , printIngredient recipe.ingredient4
+            ]
+        ]
+
+
+printProduct : Product -> Html Msg
+printProduct product =
+    h4 [ onClick (SelectRecipe product) ] [ product |> productTypeToString |> text ]
+
+
+productTypeToString : Product -> String
+productTypeToString product =
+    case product of
+        BeanSalad ->
+            "Bean Salad"
+
+
+printIngredient : Maybe Ingredient -> Html Msg
+printIngredient ingredient =
     let
-        tierString =
-            toString item.tier
+        processedIngredient =
+            ingredient |> Maybe.withDefault noIngredient
     in
-        div [ onClick (FetchItemData item.id) ]
-            [ text (item.name ++ " -- T" ++ tierString) ]
+        div []
+            [ processedIngredient
+                |> .ingredientType
+                |> ingredientTypeToString
+                |> text
+            , processedIngredient
+                |> .amountNeeded
+                |> toString
+                |> (++) " -- "
+                |> text
+            ]
+
+
+ingredientTypeToString : IngredientType -> String
+ingredientTypeToString ingredientType =
+    case ingredientType of
+        NoIngredient ->
+            "none"
+
+        Carrots ->
+            "Carrots"
+
+        Beans ->
+            "Beans"
+
+        Bread ->
+            "Bread"
+
+        Sheeps_Butter ->
+            "Sheep's Butter"
+
+
+printAllProducts : Html Msg
+printAllProducts =
+    List.map printProduct allProducts |> div [ class "column" ]
